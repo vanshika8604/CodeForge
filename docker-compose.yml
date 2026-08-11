@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: codeforge-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: codeforge_user
+      POSTGRES_PASSWORD: codeforge_password
+      POSTGRES_DB: codeforge_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - codeforge_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U codeforge_user -d codeforge_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  codeforge_pgdata:
