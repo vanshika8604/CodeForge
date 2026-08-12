@@ -8,7 +8,7 @@ services:
       POSTGRES_PASSWORD: codeforge_password
       POSTGRES_DB: codeforge_db
     ports:
-      - "5432:5432"
+      - "5432:5432"                                 
     volumes:
       - codeforge_pgdata:/var/lib/postgresql/data
     healthcheck:
