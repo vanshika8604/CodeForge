@@ -14,4 +14,35 @@ model User {
   password  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  ownedRooms  Room[]       @relation("RoomOwner")
+  memberships RoomMember[]
+}
+
+model Room {
+  id        String   @id @default(uuid())
+  name      String
+  joinCode  String   @unique
+  language  String   @default("javascript")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  ownerId String
+  owner   User   @relation("RoomOwner", fields: [ownerId], references: [id])
+
+  members RoomMember[]
+}
+
+model RoomMember {
+  id       String   @id @default(uuid())
+  role     String   @default("collaborator")
+  joinedAt DateTime @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  roomId String
+  room   Room   @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, roomId])
 }
