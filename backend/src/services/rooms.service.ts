@@ -87,3 +87,10 @@ export async function listMyRooms(userId: string) {
 
   return memberships.map((m) => m.room);
 }
+
+export async function updateRoomCode(roomId: string, code: string) {
+  await prisma.room.update({
+    where: { id: roomId },
+    data: { code },
+  });
+}
