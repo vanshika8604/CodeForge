@@ -44,20 +44,22 @@ export const api = {
   me: () => request<{ user: any }>("/auth/me"),
 
   rooms: {
-    list: () => request<{ rooms: any[] }>("/rooms"),
+  list: () => request<{ rooms: any[] }>("/rooms"),
 
-    create: (input: { name: string; language?: string }) =>
-      request<{ room: any }>("/rooms", {
-        method: "POST",
-        body: JSON.stringify(input),
-      }),
+  create: (input: { name: string; language?: string }) =>
+    request<{ room: any }>("/rooms", {
+      method: "POST",
+      body: JSON.stringify(input),
+    }),
 
-    join: (joinCode: string) =>
-      request<{ room: any }>("/rooms/join", {
-        method: "POST",
-        body: JSON.stringify({ joinCode }),
-      }),
+  join: (joinCode: string) =>
+    request<{ room: any }>("/rooms/join", {
+      method: "POST",
+      body: JSON.stringify({ joinCode }),
+    }),
 
-    getOne: (id: string) => request<{ room: any }>(`/rooms/${id}`),
-  },
+  getOne: (id: string) => request<{ room: any }>(`/rooms/${id}`),
+
+  getMessages: (id: string) => request<{ messages: any[] }>(`/rooms/${id}/messages`),
+},
 };

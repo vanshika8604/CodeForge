@@ -2,6 +2,7 @@ import { Server } from "socket.io";
 import prisma from "../lib/prisma";
 import { AuthenticatedSocket } from "./socket.auth";
 import { updateRoomCode } from "../services/rooms.service";
+import { saveChatMessage } from "../services/chat.service";
 
 const SAVE_DEBOUNCE_MS = 1500;
 const saveTimers = new Map<string, NodeJS.Timeout>();
@@ -61,13 +62,45 @@ export function registerRoomHandlers(io: Server, socket: AuthenticatedSocket) {
     const { roomId, content } = data;
 
     if (!socket.rooms.has(roomId)) {
-      return;
+      return; // ignore changes from sockets that never properly joined this room
     }
 
     socket.to(roomId).emit("code:update", { content });
 
     scheduleSave(roomId, content);
   });
+
+  socket.on(
+    "chat:send",
+    async (data: { roomId: string; content: string }, callback) => {
+      try {
+        const { roomId, content } = data;
+
+        if (!socket.rooms.has(roomId)) {
+          return callback?.({ ok: false, error: "NOT_IN_ROOM" });
+        }
+
+        const trimmed = content.trim();
+        if (!trimmed) {
+          return callback?.({ ok: false, error: "EMPTY_MESSAGE" });
+        }
+
+        const message = await saveChatMessage(roomId, socket.userId!, trimmed);
+
+        io.in(roomId).emit("chat:message", {
+          id: message.id,
+          content: message.content,
+          createdAt: message.createdAt,
+          sender: message.sender,
+        });
+
+        callback?.({ ok: true });
+      } catch (error) {
+        console.error(error);
+        callback?.({ ok: false, error: "INTERNAL_ERROR" });
+      }
+    }
+  );
 
   socket.on("disconnecting", () => {
     for (const roomId of socket.rooms) {

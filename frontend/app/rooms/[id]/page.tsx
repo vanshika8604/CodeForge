@@ -3,19 +3,29 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { api } from "@/lib/api";
+import { useAuth } from "@/context/AuthContext";
 import { useRoomSocket } from "@/hooks/useRoomSocket";
 import { CodeEditor } from "@/components/CodeEditor";
 import { PresenceList } from "@/components/PresenceList";
+import { ChatPanel } from "@/components/ChatPanel";
 
 export default function RoomPage() {
   const params = useParams();
   const roomId = params.id as string;
+  const { user } = useAuth();
 
   const [room, setRoom] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const { connected, initialCode, initialLanguage, presentUsers, socketRef } =
-    useRoomSocket(roomId);
+  const {
+    connected,
+    initialCode,
+    initialLanguage,
+    presentUsers,
+    messages,
+    sendMessage,
+    socketRef,
+  } = useRoomSocket(roomId);
 
   useEffect(() => {
     api.rooms
@@ -28,7 +38,7 @@ export default function RoomPage() {
     return <main className="p-8 text-red-600">{error}</main>;
   }
 
-  if (!room || !connected) {
+  if (!room || !connected || !user) {
     return <main className="p-8">Connecting to room...</main>;
   }
 
@@ -42,12 +52,17 @@ export default function RoomPage() {
         <PresenceList users={presentUsers} />
       </div>
 
-      <CodeEditor
-        roomId={roomId}
-        socketRef={socketRef}
-        initialCode={initialCode}
-        language={initialLanguage}
-      />
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4">
+        <CodeEditor
+          roomId={roomId}
+          socketRef={socketRef}
+          initialCode={initialCode}
+          language={initialLanguage}
+        />
+        <div className="h-[70vh]">
+          <ChatPanel messages={messages} onSend={sendMessage} currentUserId={user.id} />
+        </div>
+      </div>
     </main>
   );
 }

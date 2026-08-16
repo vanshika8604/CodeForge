@@ -15,23 +15,25 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  ownedRooms  Room[]       @relation("RoomOwner")
-  memberships RoomMember[]
+  ownedRooms   Room[]        @relation("RoomOwner")
+  memberships  RoomMember[]
+  chatMessages ChatMessage[]
 }
 
 model Room {
   id        String   @id @default(uuid())
-  name      String
+  name      String   
   joinCode  String   @unique
   language  String   @default("javascript")
-  code String @default("")
+  code      String   @default("")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   ownerId String
   owner   User   @relation("RoomOwner", fields: [ownerId], references: [id])
 
-  members RoomMember[]
+  members  RoomMember[]
+  messages ChatMessage[]
 }
 
 model RoomMember {
@@ -46,4 +48,16 @@ model RoomMember {
   room   Room   @relation(fields: [roomId], references: [id], onDelete: Cascade)
 
   @@unique([userId, roomId])
+}
+
+model ChatMessage {
+  id        String   @id @default(uuid())
+  content   String
+  createdAt DateTime @default(now())
+
+  roomId String
+  room   Room   @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  senderId String
+  sender   User   @relation(fields: [senderId], references: [id])
 }
