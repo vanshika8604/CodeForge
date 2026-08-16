@@ -11,6 +11,7 @@ export function registerRoomHandlers(io: Server, socket: AuthenticatedSocket) {
     try {
       const membership = await prisma.roomMember.findUnique({
         where: { userId_roomId: { userId: socket.userId!, roomId } },
+        include: { user: { select: { id: true, name: true } } },
       });
 
       if (!membership) {
@@ -20,12 +21,36 @@ export function registerRoomHandlers(io: Server, socket: AuthenticatedSocket) {
       const room = await prisma.room.findUnique({ where: { id: roomId } });
 
       socket.join(roomId);
+      socket.data.roomId = roomId;
+      socket.data.userId = socket.userId;
+      socket.data.userName = membership.user.name;
+
+      // Snapshot everyone currently connected to this room, deduped by
+      // userId (not socket id) — the same user can have multiple sockets
+      // open (multiple tabs), and should only ever appear once here.
+      const presentSockets = await io.in(roomId).fetchSockets();
+
+      const presentUsersMap = new Map<string, { userId: string; name: string }>();
+      for (const s of presentSockets as any[]) {
+        if (s.id === socket.id) continue; // exclude this connection itself
+        presentUsersMap.set(s.data.userId, {
+          userId: s.data.userId,
+          name: s.data.userName,
+        });
+      }
+      const presentUsers = Array.from(presentUsersMap.values());
 
       socket.to(roomId).emit("room:user-joined", {
         userId: socket.userId,
+        name: membership.user.name,
       });
 
-      callback?.({ ok: true, code: room?.code ?? "", language: room?.language });
+      callback?.({
+        ok: true,
+        code: room?.code ?? "",
+        language: room?.language,
+        presentUsers,
+      });
     } catch (error) {
       console.error(error);
       callback?.({ ok: false, error: "INTERNAL_ERROR" });
@@ -36,7 +61,7 @@ export function registerRoomHandlers(io: Server, socket: AuthenticatedSocket) {
     const { roomId, content } = data;
 
     if (!socket.rooms.has(roomId)) {
-      return; // ignore changes from sockets that never properly joined this room
+      return;
     }
 
     socket.to(roomId).emit("code:update", { content });

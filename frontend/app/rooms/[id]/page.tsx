@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { api } from "@/lib/api";
 import { useRoomSocket } from "@/hooks/useRoomSocket";
 import { CodeEditor } from "@/components/CodeEditor";
+import { PresenceList } from "@/components/PresenceList";
 
 export default function RoomPage() {
   const params = useParams();
@@ -13,7 +14,8 @@ export default function RoomPage() {
   const [room, setRoom] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const { connected, initialCode, initialLanguage, socketRef } = useRoomSocket(roomId);
+  const { connected, initialCode, initialLanguage, presentUsers, socketRef } =
+    useRoomSocket(roomId);
 
   useEffect(() => {
     api.rooms
@@ -32,9 +34,12 @@ export default function RoomPage() {
 
   return (
     <main className="p-8 flex flex-col gap-4">
-      <div>
-        <h1 className="text-2xl font-semibold">{room.name}</h1>
-        <p className="text-gray-500 text-sm">Join code: {room.joinCode}</p>
+      <div className="flex justify-between items-start">
+        <div>
+          <h1 className="text-2xl font-semibold">{room.name}</h1>
+          <p className="text-gray-500 text-sm">Join code: {room.joinCode}</p>
+        </div>
+        <PresenceList users={presentUsers} />
       </div>
 
       <CodeEditor
