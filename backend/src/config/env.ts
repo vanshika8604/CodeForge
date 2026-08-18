@@ -17,6 +17,7 @@ export const env = {
   nodeEnv: process.env.NODE_ENV || "development",
   databaseUrl: requireEnv("DATABASE_URL"),
   jwtSecret: requireEnv("JWT_SECRET"),
-    jwtExpiresIn: (process.env.JWT_EXPIRES_IN || "7d") as SignOptions["expiresIn"],
-
+  jwtExpiresIn: process.env.JWT_EXPIRES_IN || "7d",
+ judge0ApiUrl: requireEnv("JUDGE0_API_URL"),
+  judge0ApiKey: process.env.JUDGE0_API_KEY || "",
 };

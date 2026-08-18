@@ -4,6 +4,7 @@ import { generateJoinCode } from "../utils/generateJoinCode";
 interface CreateRoomInput {
   name: string;
   language?: string;
+    code: string;
   ownerId: string;
 }
 
@@ -22,6 +23,7 @@ export async function createRoom(input: CreateRoomInput) {
       name: input.name,
       language: input.language || "javascript",
       joinCode,
+          code: input.code,
       ownerId: input.ownerId,
       members: {
         create: {

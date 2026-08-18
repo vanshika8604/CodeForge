@@ -61,5 +61,11 @@ export const api = {
   getOne: (id: string) => request<{ room: any }>(`/rooms/${id}`),
 
   getMessages: (id: string) => request<{ messages: any[] }>(`/rooms/${id}/messages`),
+
+  execute: (id: string, stdin?: string) =>
+    request<{ result: any }>(`/rooms/${id}/execute`, {
+      method: "POST",
+      body: JSON.stringify({ stdin }),
+    }),
 },
 };

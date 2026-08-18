@@ -8,6 +8,7 @@ import { useRoomSocket } from "@/hooks/useRoomSocket";
 import { CodeEditor } from "@/components/CodeEditor";
 import { PresenceList } from "@/components/PresenceList";
 import { ChatPanel } from "@/components/ChatPanel";
+import { RunPanel } from "@/components/RunPanel";
 
 export default function RoomPage() {
   const params = useParams();
@@ -47,20 +48,32 @@ export default function RoomPage() {
       <div className="flex justify-between items-start">
         <div>
           <h1 className="text-2xl font-semibold">{room.name}</h1>
-          <p className="text-gray-500 text-sm">Join code: {room.joinCode}</p>
+          <p className="text-gray-500 text-sm">
+            Join code: {room.joinCode}
+          </p>
         </div>
+
         <PresenceList users={presentUsers} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4">
-        <CodeEditor
-          roomId={roomId}
-          socketRef={socketRef}
-          initialCode={initialCode}
-          language={initialLanguage}
-        />
+        <div className="flex flex-col gap-3">
+          <CodeEditor
+            roomId={roomId}
+            socketRef={socketRef}
+            initialCode={initialCode}
+            language={initialLanguage}
+          />
+
+          <RunPanel roomId={roomId} />
+        </div>
+
         <div className="h-[70vh]">
-          <ChatPanel messages={messages} onSend={sendMessage} currentUserId={user.id} />
+          <ChatPanel
+            messages={messages}
+            onSend={sendMessage}
+            currentUserId={user.id}
+          />
         </div>
       </div>
     </main>

@@ -6,13 +6,19 @@ import { getRecentMessages } from "../services/chat.service";
 
 export async function create(req: AuthenticatedRequest, res: Response) {
   try {
-    const { name, language } = req.body;
+    const { name, language, code } = req.body;
 
     if (!name) {
       return res.status(400).json({ error: "name is required" });
     }
 
-    const room = await createRoom({ name, language, ownerId: req.userId! });
+    const room = await createRoom({
+      name,
+      language,
+      code: code || "",
+      ownerId: req.userId!,
+    });
+
     return res.status(201).json({ room });
   } catch (error) {
     console.error(error);

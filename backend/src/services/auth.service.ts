@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
+import jwt, { SignOptions } from "jsonwebtoken";
 import prisma from "../lib/prisma";
 import { env } from "../config/env";
 
@@ -68,7 +68,7 @@ export async function loginUser(input: LoginInput) {
 
 function signToken(userId: string): string {
   return jwt.sign({ sub: userId }, env.jwtSecret, {
-    expiresIn: env.jwtExpiresIn,
+    expiresIn: env.jwtExpiresIn as SignOptions["expiresIn"],
   });
 }
 
