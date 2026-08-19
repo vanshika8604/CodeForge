@@ -20,4 +20,5 @@ export const env = {
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || "7d",
  judge0ApiUrl: requireEnv("JUDGE0_API_URL"),
   judge0ApiKey: process.env.JUDGE0_API_KEY || "",
+  frontendUrl: process.env.FRONTEND_URL || "http://localhost:3000",
 };

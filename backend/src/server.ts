@@ -10,7 +10,8 @@ const httpServer = http.createServer(app);
 
 const io = new Server(httpServer, {
   cors: {
-    origin: "*", // tighten this to your frontend's real origin before production
+    origin: env.frontendUrl,
+    credentials: true,
   },
 });
 

@@ -8,13 +8,7 @@ import {
 
 export async function register(req: Request, res: Response) {
   try {
-    const { name, email, password } = req.body;
-
-    if (!name || !email || !password) {
-      return res.status(400).json({ error: "name, email, and password are required" });
-    }
-
-    const result = await registerUser({ name, email, password });
+    const result = await registerUser(req.body); // already validated & typed
     return res.status(201).json(result);
   } catch (error) {
     if (error instanceof Error && error.message === "EMAIL_ALREADY_IN_USE") {
@@ -27,13 +21,7 @@ export async function register(req: Request, res: Response) {
 
 export async function login(req: Request, res: Response) {
   try {
-    const { email, password } = req.body;
-
-    if (!email || !password) {
-      return res.status(400).json({ error: "email and password are required" });
-    }
-
-    const result = await loginUser({ email, password });
+    const result = await loginUser(req.body);
     return res.status(200).json(result);
   } catch (error) {
     if (error instanceof Error && error.message === "INVALID_CREDENTIALS") {
