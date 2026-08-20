@@ -1,6 +1,7 @@
 import express, { Application } from "express";
 import cors from "cors";
 import helmet from "helmet";
+import cookieParser from "cookie-parser";
 import healthRoutes from "./routes/health.routes";
 import authRoutes from "./routes/auth.routes";
 import roomsRoutes from "./routes/rooms.routes";
@@ -18,6 +19,7 @@ function createApp(): Application {
     })
   );
 
+  app.use(cookieParser());
   app.use(express.json());
 
   app.use("/api", healthRoutes);

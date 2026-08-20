@@ -35,11 +35,8 @@ export function useRoomSocket(roomId: string): UseRoomSocketResult {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) return;
-
     const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
-      auth: { token },
+      withCredentials: true,
     });
 
     socketRef.current = socket;
@@ -73,7 +70,9 @@ export function useRoomSocket(roomId: string): UseRoomSocketResult {
     });
 
     socket.on("room:user-left", (data: { userId: string }) => {
-      setPresentUsers((prev) => prev.filter((u) => u.userId !== data.userId));
+      setPresentUsers((prev) =>
+        prev.filter((u) => u.userId !== data.userId)
+      );
     });
 
     socket.on("chat:message", (message: ChatMessage) => {

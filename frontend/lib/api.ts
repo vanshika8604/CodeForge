@@ -8,13 +8,11 @@ async function request<T>(
   path: string,
   options: RequestInit = {}
 ): Promise<T> {
-  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-
   const res = await fetch(`${API_URL}${path}`, {
     ...options,
+    credentials: "include",
     headers: {
       "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...options.headers,
     },
   });
@@ -29,43 +27,72 @@ async function request<T>(
 }
 
 export const api = {
-  register: (input: { name: string; email: string; password: string }) =>
-    request<{ user: any; token: string }>("/auth/register", {
+  // -------------------------
+  // AUTH
+  // -------------------------
+
+  register: (input: {
+    name: string;
+    email: string;
+    password: string;
+  }) =>
+    request<{ user: any }>("/auth/register", {
       method: "POST",
       body: JSON.stringify(input),
     }),
 
-  login: (input: { email: string; password: string }) =>
-    request<{ user: any; token: string }>("/auth/login", {
+  login: (input: {
+    email: string;
+    password: string;
+  }) =>
+    request<{ user: any }>("/auth/login", {
       method: "POST",
       body: JSON.stringify(input),
     }),
 
-  me: () => request<{ user: any }>("/auth/me"),
+  logout: () =>
+    request<{ ok: boolean }>("/auth/logout", {
+      method: "POST",
+    }),
+
+  me: () =>
+    request<{ user: any }>("/auth/me"),
+
+  // -------------------------
+  // ROOMS
+  // -------------------------
 
   rooms: {
-  list: () => request<{ rooms: any[] }>("/rooms"),
+    list: () =>
+      request<{ rooms: any[] }>("/rooms"),
 
-  create: (input: { name: string; language?: string }) =>
-    request<{ room: any }>("/rooms", {
-      method: "POST",
-      body: JSON.stringify(input),
-    }),
+    create: (input: {
+      name: string;
+      language?: string;
+    }) =>
+      request<{ room: any }>("/rooms", {
+        method: "POST",
+        body: JSON.stringify(input),
+      }),
 
-  join: (joinCode: string) =>
-    request<{ room: any }>("/rooms/join", {
-      method: "POST",
-      body: JSON.stringify({ joinCode }),
-    }),
+    join: (joinCode: string) =>
+      request<{ room: any }>("/rooms/join", {
+        method: "POST",
+        body: JSON.stringify({ joinCode }),
+      }),
 
-  getOne: (id: string) => request<{ room: any }>(`/rooms/${id}`),
+    getOne: (id: string) =>
+      request<{ room: any }>(`/rooms/${id}`),
 
-  getMessages: (id: string) => request<{ messages: any[] }>(`/rooms/${id}/messages`),
+    getMessages: (id: string) =>
+      request<{ messages: any[] }>(
+        `/rooms/${id}/messages`
+      ),
 
-  execute: (id: string, stdin?: string) =>
-    request<{ result: any }>(`/rooms/${id}/execute`, {
-      method: "POST",
-      body: JSON.stringify({ stdin }),
-    }),
-},
+    execute: (id: string, stdin?: string) =>
+      request<{ result: any }>(`/rooms/${id}/execute`, {
+        method: "POST",
+        body: JSON.stringify({ stdin }),
+      }),
+  },
 };

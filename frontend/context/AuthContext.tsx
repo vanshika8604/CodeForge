@@ -14,7 +14,7 @@ interface AuthContextValue {
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -24,33 +24,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      setLoading(false);
-      return;
-    }
-
     api
       .me()
       .then((res) => setUser(res.user))
-      .catch(() => localStorage.removeItem("token"))
+      .catch(() => setUser(null))
       .finally(() => setLoading(false));
   }, []);
 
   async function login(email: string, password: string) {
     const res = await api.login({ email, password });
-    localStorage.setItem("token", res.token);
     setUser(res.user);
   }
 
   async function register(name: string, email: string, password: string) {
     const res = await api.register({ name, email, password });
-    localStorage.setItem("token", res.token);
     setUser(res.user);
   }
 
-  function logout() {
-    localStorage.removeItem("token");
+  async function logout() {
+    await api.logout();
     setUser(null);
   }
 

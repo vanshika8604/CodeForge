@@ -1,15 +1,13 @@
 import { Request, Response } from "express";
+import { registerUser, loginUser, getUserById } from "../services/auth.service";
 import { AuthenticatedRequest } from "../middleware/auth.middleware";
-import {
-  registerUser,
-  loginUser,
-  getUserById,
-} from "../services/auth.service";
+import { setAuthCookie, clearAuthCookie } from "../utils/cookies";
 
 export async function register(req: Request, res: Response) {
   try {
-    const result = await registerUser(req.body); // already validated & typed
-    return res.status(201).json(result);
+    const result = await registerUser(req.body);
+    setAuthCookie(res, result.token);
+    return res.status(201).json({ user: result.user });
   } catch (error) {
     if (error instanceof Error && error.message === "EMAIL_ALREADY_IN_USE") {
       return res.status(409).json({ error: "Email already in use" });
@@ -22,7 +20,8 @@ export async function register(req: Request, res: Response) {
 export async function login(req: Request, res: Response) {
   try {
     const result = await loginUser(req.body);
-    return res.status(200).json(result);
+    setAuthCookie(res, result.token);
+    return res.status(200).json({ user: result.user });
   } catch (error) {
     if (error instanceof Error && error.message === "INVALID_CREDENTIALS") {
       return res.status(401).json({ error: "Invalid email or password" });
@@ -32,7 +31,10 @@ export async function login(req: Request, res: Response) {
   }
 }
 
-
+export async function logout(req: Request, res: Response) {
+  clearAuthCookie(res);
+  return res.status(200).json({ ok: true });
+}
 
 export async function me(req: AuthenticatedRequest, res: Response) {
   try {
