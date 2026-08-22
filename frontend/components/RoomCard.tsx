@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { Badge } from "@/components/ui/Badge";
 
 interface RoomCardProps {
   room: {
@@ -17,11 +18,21 @@ export function RoomCard({ room }: RoomCardProps) {
   return (
     <button
       onClick={() => router.push(`/rooms/${room.id}`)}
-      className="border rounded p-4 text-left hover:bg-gray-50 transition"
+      className="text-left bg-[#111722] border border-[#1a2232] rounded-xl p-4
+        hover:border-indigo-500/50 hover:bg-[#141b28]
+        transition-colors duration-150 w-full"
     >
-      <h3 className="font-semibold">{room.name}</h3>
-      <p className="text-sm text-gray-500">{room.language}</p>
-      <p className="text-xs text-gray-400 mt-2">Code: {room.joinCode}</p>
+      <div className="flex items-center justify-between mb-2 gap-3">
+        <h3 className="font-medium text-sm text-gray-100 truncate">
+          {room.name}
+        </h3>
+
+        <Badge tone="neutral">{room.language}</Badge>
+      </div>
+
+      <p className="text-xs text-gray-600 font-mono">
+        {room.joinCode}
+      </p>
     </button>
   );
 }

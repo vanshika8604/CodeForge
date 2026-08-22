@@ -9,23 +9,31 @@ interface PresenceListProps {
 
 export function PresenceList({ users }: PresenceListProps) {
   return (
-    <div className="flex flex-col gap-2">
-      <h2 className="text-sm font-semibold text-gray-400">
-        In this room ({users.length + 1})
-      </h2>
-      <div className="flex flex-wrap gap-2">
-        <span className="text-xs bg-green-900 text-green-200 rounded-full px-3 py-1">
+    <div className="flex items-center gap-1.5">
+      <div className="flex -space-x-2">
+        {/* Current user */}
+        <div
+          title="You"
+          className="h-7 w-7 rounded-full bg-indigo-600 border-2 border-[#0d121c] flex items-center justify-center text-[9px] font-semibold text-white"
+        >
           You
-        </span>
+        </div>
+
+        {/* Other users */}
         {users.map((user) => (
-          <span
+          <div
             key={user.userId}
-            className="text-xs bg-gray-800 text-gray-200 rounded-full px-3 py-1"
+            title={user.name}
+            className="h-7 w-7 rounded-full bg-[#232b3d] border-2 border-[#0d121c] flex items-center justify-center text-xs font-medium text-gray-200"
           >
-            {user.name}
-          </span>
+            {user.name.charAt(0).toUpperCase()}
+          </div>
         ))}
       </div>
+
+      <span className="text-xs text-gray-500 ml-1">
+        {users.length + 1}
+      </span>
     </div>
   );
 }

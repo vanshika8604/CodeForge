@@ -1,10 +1,16 @@
 "use client";
 
 import { useState, FormEvent } from "react";
+import { Input } from "@/components/ui/Input";
+import { Button } from "@/components/ui/Button";
 
 interface AuthFormProps {
   mode: "login" | "register";
-  onSubmit: (values: { name?: string; email: string; password: string }) => Promise<void>;
+  onSubmit: (values: {
+    name?: string;
+    email: string;
+    password: string;
+  }) => Promise<void>;
 }
 
 export function AuthForm({ mode, onSubmit }: AuthFormProps) {
@@ -16,11 +22,16 @@ export function AuthForm({ mode, onSubmit }: AuthFormProps) {
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
+
     setError(null);
     setSubmitting(true);
 
     try {
-      await onSubmit({ name: mode === "register" ? name : undefined, email, password });
+      await onSubmit({
+        name: mode === "register" ? name : undefined,
+        email,
+        password,
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
@@ -29,45 +40,50 @@ export function AuthForm({ mode, onSubmit }: AuthFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-full max-w-sm">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-3 w-full">
       {mode === "register" && (
-        <input
+        <Input
           type="text"
           placeholder="Name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="border rounded px-3 py-2"
           required
         />
       )}
 
-      <input
+      <Input
         type="email"
         placeholder="Email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
-        className="border rounded px-3 py-2"
         required
       />
 
-      <input
+      <Input
         type="password"
         placeholder="Password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
-        className="border rounded px-3 py-2"
         required
       />
 
-      {error && <p className="text-red-600 text-sm">{error}</p>}
+      {error && (
+        <p className="text-red-400 text-xs">
+          {error}
+        </p>
+      )}
 
-      <button
+      <Button
         type="submit"
         disabled={submitting}
-        className="bg-black text-white rounded px-4 py-2 disabled:opacity-50"
+        className="w-full mt-1"
       >
-        {submitting ? "Please wait..." : mode === "login" ? "Log in" : "Create account"}
-      </button>
+        {submitting
+          ? "Please wait..."
+          : mode === "login"
+            ? "Log in"
+            : "Create account"}
+      </Button>
     </form>
   );
 }

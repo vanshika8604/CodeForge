@@ -1,7 +1,10 @@
 "use client";
 
 import { useState } from "react";
+
 import { api } from "@/lib/api";
+import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
 
 interface RunPanelProps {
   roomId: string;
@@ -34,31 +37,66 @@ export function RunPanel({ roomId }: RunPanelProps) {
     }
   }
 
-  return (
-    <div className="flex flex-col gap-2 border rounded p-3">
-      <button
-        onClick={handleRun}
-        disabled={running}
-        className="bg-green-700 text-white rounded px-4 py-2 text-sm disabled:opacity-50 self-start"
-      >
-        {running ? "Running..." : "▶ Run"}
-      </button>
+  const hasError =
+    result?.stderr != null || result?.compileOutput != null;
 
-      {error && <p className="text-red-500 text-sm">{error}</p>}
+  return (
+    <div className="flex flex-col gap-3 rounded-xl border border-[#232b3d] bg-[#111722] p-3">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-xs font-semibold text-gray-200">
+            Code Execution
+          </h2>
+          <p className="text-[10px] text-gray-500 mt-0.5">
+            Run the current code
+          </p>
+        </div>
+
+        <Button
+          type="button"
+          onClick={handleRun}
+          disabled={running}
+          className="text-xs px-3 py-1.5"
+        >
+          {running ? "Running..." : "▶ Run"}
+        </Button>
+      </div>
+
+      {error && (
+        <div className="rounded-lg border border-red-900/50 bg-red-900/20 px-3 py-2">
+          <p className="text-xs text-red-400">{error}</p>
+        </div>
+      )}
 
       {result && (
-        <div className="bg-black rounded p-3 font-mono text-sm text-gray-200 max-h-48 overflow-y-auto">
-          <p className="text-gray-500 mb-1">{result.status}</p>
+        <div className="bg-[#0a0e14] border border-[#1a2232] rounded-lg p-3 font-mono text-xs max-h-40 overflow-y-auto">
+          <Badge tone={hasError ? "danger" : "success"}>
+            {result.status}
+          </Badge>
+
           {result.compileOutput && (
-            <pre className="text-yellow-400 whitespace-pre-wrap">{result.compileOutput}</pre>
+            <pre className="text-yellow-400 mt-2 whitespace-pre-wrap">
+              {result.compileOutput}
+            </pre>
           )}
-          {result.stdout && <pre className="whitespace-pre-wrap">{result.stdout}</pre>}
+
+          {result.stdout && (
+            <pre className="text-gray-300 mt-2 whitespace-pre-wrap">
+              {result.stdout}
+            </pre>
+          )}
+
           {result.stderr && (
-            <pre className="text-red-400 whitespace-pre-wrap">{result.stderr}</pre>
+            <pre className="text-red-400 mt-2 whitespace-pre-wrap">
+              {result.stderr}
+            </pre>
           )}
-          {!result.stdout && !result.stderr && !result.compileOutput && (
-            <p className="text-gray-500">No output</p>
-          )}
+
+          {!result.stdout &&
+            !result.stderr &&
+            !result.compileOutput && (
+              <p className="text-gray-500 mt-2">No output</p>
+            )}
         </div>
       )}
     </div>

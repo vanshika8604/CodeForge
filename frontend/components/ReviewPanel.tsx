@@ -1,7 +1,10 @@
 "use client";
 
 import { useState } from "react";
+
 import { api } from "@/lib/api";
+import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
 
 interface CodeIssue {
   severity: "info" | "warning" | "critical";
@@ -15,9 +18,9 @@ interface ReviewResult {
 }
 
 const SEVERITY_STYLES: Record<CodeIssue["severity"], string> = {
-  info: "text-blue-400 border-blue-800",
-  warning: "text-yellow-400 border-yellow-800",
-  critical: "text-red-400 border-red-800",
+  info: "border-blue-500",
+  warning: "border-yellow-500",
+  critical: "border-red-500",
 };
 
 interface ReviewPanelProps {
@@ -45,32 +48,75 @@ export function ReviewPanel({ roomId }: ReviewPanelProps) {
   }
 
   return (
-    <div className="flex flex-col gap-2 border rounded p-3">
-      <button
-        onClick={handleReview}
-        disabled={loading}
-        className="bg-purple-700 text-white rounded px-4 py-2 text-sm disabled:opacity-50 self-start"
-      >
-        {loading ? "Reviewing..." : "✦ AI Review"}
-      </button>
+    <div className="flex flex-col gap-3 rounded-xl border border-[#232b3d] bg-[#111722] p-3">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-xs font-semibold text-gray-200">
+            AI Code Review
+          </h2>
+          <p className="text-[10px] text-gray-500 mt-0.5">
+            Analyze the current code
+          </p>
+        </div>
 
-      {error && <p className="text-red-500 text-sm">{error}</p>}
+        <Button
+          type="button"
+          onClick={handleReview}
+          disabled={loading}
+          className="text-xs px-3 py-1.5"
+        >
+          {loading ? "Reviewing..." : "✦ AI Review"}
+        </Button>
+      </div>
+
+      {error && (
+        <div className="rounded-lg border border-red-900/50 bg-red-900/20 px-3 py-2">
+          <p className="text-xs text-red-400">{error}</p>
+        </div>
+      )}
 
       {result && (
-        <div className="flex flex-col gap-2 max-h-48 overflow-y-auto">
-          <p className="text-sm text-gray-300">{result.summary}</p>
+        <div className="flex flex-col gap-3 max-h-40 overflow-y-auto">
+          <div className="rounded-lg bg-[#0a0e14] border border-[#1a2232] p-3">
+            <p className="text-xs text-gray-300 leading-relaxed">
+              {result.summary}
+            </p>
+          </div>
+
           {result.issues.length === 0 ? (
-            <p className="text-sm text-gray-500">No issues found.</p>
+            <div className="rounded-lg border border-green-900/50 bg-green-900/10 px-3 py-2">
+              <p className="text-xs text-green-400">
+                No issues found.
+              </p>
+            </div>
           ) : (
-            result.issues.map((issue, i) => (
-              <div
-                key={i}
-                className={`text-xs border-l-2 pl-2 ${SEVERITY_STYLES[issue.severity]}`}
-              >
-                {issue.line !== null && <span className="mr-1">Line {issue.line}:</span>}
-                {issue.message}
-              </div>
-            ))
+            <div className="flex flex-col gap-2">
+              {result.issues.map((issue, i) => (
+                <div
+                  key={i}
+                  className={`text-xs border-l-2 pl-2 py-1 ${SEVERITY_STYLES[issue.severity]}`}
+                >
+                  <Badge
+                    tone={
+                      issue.severity === "critical"
+                        ? "danger"
+                        : issue.severity === "warning"
+                          ? "warning"
+                          : "info"
+                    }
+                  >
+                    {issue.severity}
+                  </Badge>
+
+                  <span className="ml-2 text-gray-300">
+                    {issue.line !== null
+                      ? `L${issue.line}: `
+                      : ""}
+                    {issue.message}
+                  </span>
+                </div>
+              ))}
+            </div>
           )}
         </div>
       )}
