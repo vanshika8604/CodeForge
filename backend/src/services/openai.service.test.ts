@@ -1,3 +1,5 @@
+process.env.OPENAI_API_KEY = "test-openai-key";
+
 import { reviewCode } from "./openai.service";
 
 const mockCreate = jest.fn();
