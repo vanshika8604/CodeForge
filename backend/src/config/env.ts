@@ -21,4 +21,7 @@ export const env = {
  judge0ApiUrl: requireEnv("JUDGE0_API_URL"),
   judge0ApiKey: process.env.JUDGE0_API_KEY || "",
   frontendUrl: process.env.FRONTEND_URL || "http://localhost:3000",
+
+  openaiApiKey: requireEnv("OPENAI_API_KEY"),
+openaiModel: process.env.OPENAI_MODEL || "gpt-4o-mini",
 };

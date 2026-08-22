@@ -2,17 +2,21 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+
 import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { useRoomSocket } from "@/hooks/useRoomSocket";
+
 import { CodeEditor } from "@/components/CodeEditor";
 import { PresenceList } from "@/components/PresenceList";
 import { ChatPanel } from "@/components/ChatPanel";
 import { RunPanel } from "@/components/RunPanel";
+import { ReviewPanel } from "@/components/ReviewPanel";
 
 export default function RoomPage() {
   const params = useParams();
   const roomId = params.id as string;
+
   const { user } = useAuth();
 
   const [room, setRoom] = useState<any>(null);
@@ -48,6 +52,7 @@ export default function RoomPage() {
       <div className="flex justify-between items-start">
         <div>
           <h1 className="text-2xl font-semibold">{room.name}</h1>
+
           <p className="text-gray-500 text-sm">
             Join code: {room.joinCode}
           </p>
@@ -65,7 +70,10 @@ export default function RoomPage() {
             language={initialLanguage}
           />
 
-          <RunPanel roomId={roomId} />
+          <div className="grid grid-cols-2 gap-3">
+            <RunPanel roomId={roomId} />
+            <ReviewPanel roomId={roomId} />
+          </div>
         </div>
 
         <div className="h-[70vh]">

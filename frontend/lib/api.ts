@@ -94,5 +94,9 @@ export const api = {
         method: "POST",
         body: JSON.stringify({ stdin }),
       }),
+    review: (id: string) => 
+      request<{ result: any }>(`/rooms/${id}/review`, { 
+        method: "POST" }),
+
   },
 };
