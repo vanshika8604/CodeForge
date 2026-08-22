@@ -1,8 +1,6 @@
 import OpenAI from "openai";
 import { env } from "../config/env";
 
-const client = new OpenAI({ apiKey: env.openaiApiKey });
-
 export interface CodeIssue {
   severity: "info" | "warning" | "critical";
   line: number | null;
@@ -36,16 +34,37 @@ matching this exact shape, and nothing else:
 If the code has no notable issues, return an empty "issues" array and say so in "summary".
 Keep "message" values concise, specific, and actionable.`;
 
-export async function reviewCode(language: string, code: string): Promise<ReviewResult> {
-  if (!code.trim()) {
-    return { summary: "There is no code to review yet.", issues: [] };
+function getClient(): OpenAI {
+  if (!env.openaiApiKey) {
+    throw new Error("OPENAI_API_KEY_MISSING");
   }
+
+  return new OpenAI({
+    apiKey: env.openaiApiKey,
+  });
+}
+
+export async function reviewCode(
+  language: string,
+  code: string
+): Promise<ReviewResult> {
+  if (!code.trim()) {
+    return {
+      summary: "There is no code to review yet.",
+      issues: [],
+    };
+  }
+
+  const client = getClient();
 
   const response = await client.chat.completions.create({
     model: env.openaiModel,
     response_format: { type: "json_object" },
     messages: [
-      { role: "system", content: SYSTEM_PROMPT },
+      {
+        role: "system",
+        content: SYSTEM_PROMPT,
+      },
       {
         role: "user",
         content: `Language: ${language}\n\nCode:\n\`\`\`${language}\n${code}\n\`\`\``,
@@ -55,17 +74,19 @@ export async function reviewCode(language: string, code: string): Promise<Review
   });
 
   const raw = response.choices[0]?.message?.content;
+
   if (!raw) {
     throw new Error("EMPTY_AI_RESPONSE");
   }
 
   try {
     const parsed = JSON.parse(raw) as ReviewResult;
+
     return {
       summary: parsed.summary ?? "No summary provided.",
       issues: Array.isArray(parsed.issues) ? parsed.issues : [],
     };
-  } catch (error) {
+  } catch {
     throw new Error("INVALID_AI_RESPONSE");
   }
 }
