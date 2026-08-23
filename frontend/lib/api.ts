@@ -1,13 +1,17 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 interface ApiError {
-  error: string;
+  error?: string;
 }
 
 async function request<T>(
   path: string,
   options: RequestInit = {}
 ): Promise<T> {
+  if (!API_URL) {
+    throw new Error("NEXT_PUBLIC_API_URL is not configured");
+  }
+
   const res = await fetch(`${API_URL}${path}`, {
     ...options,
     credentials: "include",
@@ -17,10 +21,36 @@ async function request<T>(
     },
   });
 
-  const data = await res.json();
+  const text = await res.text();
+
+  let data: unknown;
+
+  try {
+    data = JSON.parse(text);
+  } catch {
+    console.error("Non-JSON API response:", {
+      path,
+      status: res.status,
+      response: text.slice(0, 500),
+    });
+
+    throw new Error(
+      `Server returned ${res.status}: ${text.slice(0, 200)}`
+    );
+  }
+
+  console.log("API response:", {
+    path,
+    status: res.status,
+    data,
+  });
 
   if (!res.ok) {
-    throw new Error((data as ApiError).error || "Something went wrong");
+    const errorData = data as ApiError;
+
+    throw new Error(
+      errorData.error || "Something went wrong"
+    );
   }
 
   return data as T;
@@ -36,7 +66,7 @@ export const api = {
     email: string;
     password: string;
   }) =>
-    request<{ user: any }>("/auth/register", {
+    request<{ user: any }>("/api/auth/register", {
       method: "POST",
       body: JSON.stringify(input),
     }),
@@ -45,18 +75,18 @@ export const api = {
     email: string;
     password: string;
   }) =>
-    request<{ user: any }>("/auth/login", {
+    request<{ user: any }>("/api/auth/login", {
       method: "POST",
       body: JSON.stringify(input),
     }),
 
   logout: () =>
-    request<{ ok: boolean }>("/auth/logout", {
+    request<{ ok: boolean }>("/api/auth/logout", {
       method: "POST",
     }),
 
   me: () =>
-    request<{ user: any }>("/auth/me"),
+    request<{ user: any }>("/api/auth/me"),
 
   // -------------------------
   // ROOMS
@@ -64,39 +94,46 @@ export const api = {
 
   rooms: {
     list: () =>
-      request<{ rooms: any[] }>("/rooms"),
+      request<{ rooms: any[] }>("/api/rooms"),
 
     create: (input: {
       name: string;
       language?: string;
     }) =>
-      request<{ room: any }>("/rooms", {
+      request<{ room: any }>("/api/rooms", {
         method: "POST",
         body: JSON.stringify(input),
       }),
 
     join: (joinCode: string) =>
-      request<{ room: any }>("/rooms/join", {
+      request<{ room: any }>("/api/rooms/join", {
         method: "POST",
         body: JSON.stringify({ joinCode }),
       }),
 
     getOne: (id: string) =>
-      request<{ room: any }>(`/rooms/${id}`),
+      request<{ room: any }>(`/api/rooms/${id}`),
 
     getMessages: (id: string) =>
       request<{ messages: any[] }>(
-        `/rooms/${id}/messages`
+        `/api/rooms/${id}/messages`
       ),
 
     execute: (id: string, stdin?: string) =>
-      request<{ result: any }>(`/rooms/${id}/execute`, {
-        method: "POST",
-        body: JSON.stringify({ stdin }),
-      }),
-    review: (id: string) => 
-      request<{ result: any }>(`/rooms/${id}/review`, { 
-        method: "POST" }),
+      request<{ result: any }>(
+        `/api/rooms/${id}/execute`,
+        {
+          method: "POST",
+          body: JSON.stringify({ stdin }),
+        }
+      ),
 
+    review: (id: string) =>
+      request<{ result: any }>(
+        `/api/rooms/${id}/review`,
+        {
+          method: "POST",
+        }
+      ),
   },
 };
