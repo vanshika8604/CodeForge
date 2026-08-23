@@ -2,6 +2,10 @@
 import dotenv from "dotenv";
 
 dotenv.config();
+console.log("GEMINI CONFIG:", {
+  hasApiKey: Boolean(process.env.GEMINI_API_KEY),
+  model: process.env.GEMINI_MODEL || "NOT_SET",
+});
 
 function requireEnv(key: string): string {
   const value = process.env[key];
@@ -25,8 +29,8 @@ export const env = {
   judge0ApiUrl: process.env.JUDGE0_API_URL || "",
   judge0ApiKey: process.env.JUDGE0_API_KEY || "",
 
-  openaiApiKey: process.env.OPENAI_API_KEY || "",
-  openaiModel: process.env.OPENAI_MODEL || "gpt-4o-mini",
+  geminiApiKey: process.env.GEMINI_API_KEY || "",
+  geminiModel: process.env.GEMINI_MODEL || "gemini-3.6-flash",
 
   frontendUrl: process.env.FRONTEND_URL || "http://localhost:3000",
 

@@ -30,7 +30,7 @@ export async function review(
 
     if (
       error instanceof Error &&
-      error.message === "OPENAI_API_KEY_MISSING"
+      error.message === "GEMINI_API_KEY_MISSING"
     ) {
       return res.status(503).json({
         error: "AI review service is not configured",
