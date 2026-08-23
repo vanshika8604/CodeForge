@@ -9,6 +9,7 @@ import { env } from "./config/env";
 
 function createApp(): Application {
   const app = express();
+  app.set("trust proxy", 1);
 
   app.use(helmet());
 
