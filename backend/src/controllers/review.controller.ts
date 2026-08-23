@@ -49,6 +49,18 @@ export async function review(
       });
     }
 
+    if (
+      error &&
+      typeof error === "object" &&
+      "status" in error &&
+      error.status === 429
+    ) {
+      return res.status(503).json({
+        error:
+          "AI review is currently unavailable because the AI API quota has been exhausted.",
+      });
+    }
+    
     console.error(error);
 
     return res.status(500).json({
