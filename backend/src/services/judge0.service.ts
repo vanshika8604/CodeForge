@@ -1,3 +1,4 @@
+
 import axios from "axios";
 import { env } from "../config/env";
 import { getLanguageId } from "../utils/languageMap";
@@ -5,6 +6,8 @@ import { getLanguageId } from "../utils/languageMap";
 const client = axios.create({
   baseURL: env.judge0ApiUrl,
   headers: {
+    "X-RapidAPI-Key": env.judge0ApiKey,
+    "X-RapidAPI-Host": "judge0-ce.p.rapidapi.com",
     "Content-Type": "application/json",
   },
   timeout: 10000,
@@ -20,30 +23,52 @@ interface ExecutionResult {
 const POLL_INTERVAL_MS = 1000;
 const MAX_POLL_ATTEMPTS = 10;
 
-export async function executeCode(language: string, sourceCode: string, stdin = ""): Promise<ExecutionResult> {
+export function isJudge0Configured(): boolean {
+  return env.judge0ApiUrl.trim().length > 0;
+}
+
+export async function executeCode(
+  language: string,
+  sourceCode: string,
+  stdin = ""
+): Promise<ExecutionResult> {
+  if (!isJudge0Configured()) {
+    throw new Error("JUDGE0_NOT_CONFIGURED");
+  }
+
   const languageId = getLanguageId(language);
 
-  const submitResponse = await client.post("/submissions", {
-    source_code: Buffer.from(sourceCode).toString("base64"),
-    language_id: languageId,
-    stdin: Buffer.from(stdin).toString("base64"),
-  }, {
-    params: { base64_encoded: "true" },
-  });
+  const submitResponse = await client.post(
+    "/submissions",
+    {
+      source_code: Buffer.from(sourceCode).toString("base64"),
+      language_id: languageId,
+      stdin: Buffer.from(stdin).toString("base64"),
+    },
+    {
+      params: {
+        base64_encoded: "true",
+      },
+    }
+  );
 
   const { token } = submitResponse.data;
 
   for (let attempt = 0; attempt < MAX_POLL_ATTEMPTS; attempt++) {
     await sleep(POLL_INTERVAL_MS);
 
-    const resultResponse = await client.get(`/submissions/${token}`, {
-      params: { base64_encoded: "true" },
-    });
+    const resultResponse = await client.get(
+      `/submissions/${token}`,
+      {
+        params: {
+          base64_encoded: "true",
+        },
+      }
+    );
 
     const data = resultResponse.data;
     const statusId = data.status?.id;
 
-    // status id 1 = "In Queue", 2 = "Processing" — keep polling.
     if (statusId === 1 || statusId === 2) {
       continue;
     }
@@ -60,10 +85,14 @@ export async function executeCode(language: string, sourceCode: string, stdin = 
 }
 
 function decodeBase64(value: string | null): string | null {
-  if (!value) return null;
+  if (!value) {
+    return null;
+  }
+
   return Buffer.from(value, "base64").toString("utf-8");
 }
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
+
