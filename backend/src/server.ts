@@ -42,7 +42,7 @@ async function startServer() {
   });
 
   httpServer.listen(env.port, () => {
-    console.log(`✅ CodeForge backend running on http://localhost:${env.port}`);
+    console.log(`✅ CodeForge backend running on port ${env.port}`);
     console.log(`🌱 Environment: ${env.nodeEnv}`);
   });
 }
